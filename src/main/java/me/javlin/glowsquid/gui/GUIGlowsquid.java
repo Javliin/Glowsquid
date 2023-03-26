@@ -228,7 +228,7 @@ public class GUIGlowsquid extends JFrame {
             int endIndex = startIndex + (fieldSizes.get(index) * 3) - 1;
 
             try {
-                data.getHighlighter().addHighlight(startIndex, endIndex, new DefaultHighlighter.DefaultHighlightPainter(Color.WHITE));
+                data.getHighlighter().addHighlight(startIndex, endIndex, new DefaultHighlighter.DefaultHighlightPainter(new Color(0, 0, 0, 100)));
             } catch (BadLocationException exception) {
                 Console.error("FAIL_HIGHLIGHT");
                 exception.printStackTrace();
@@ -293,7 +293,7 @@ public class GUIGlowsquid extends JFrame {
 
         about.addActionListener(click -> JOptionPane.showMessageDialog(
                 null,
-                "A Minecraft packet interceptor written in Java\nDeveloped by Javlin",
+                "A Minecraft packet capture tool written in Java\nDeveloped by Javlin",
                 "About",
                 JOptionPane.INFORMATION_MESSAGE,
                 icon
