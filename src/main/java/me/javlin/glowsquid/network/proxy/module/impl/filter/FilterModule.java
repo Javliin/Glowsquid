@@ -1,10 +1,8 @@
 package me.javlin.glowsquid.network.proxy.module.impl.filter;
 
 import me.javlin.glowsquid.gui.GUIGlowsquid;
-import me.javlin.glowsquid.network.packet.PacketInfo;
 import me.javlin.glowsquid.network.packet.builder.PacketBuilder;
 import me.javlin.glowsquid.network.proxy.module.Module;
-import me.javlin.glowsquid.network.proxy.module.ModuleManager;
 import me.javlin.glowsquid.network.packet.Packet;
 import me.javlin.glowsquid.network.packet.event.PacketEvent;
 import me.javlin.glowsquid.network.packet.event.PacketSendEvent;

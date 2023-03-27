@@ -15,7 +15,8 @@ public class PlayerTrackerModule extends Module {
 
     private int tickCount;
 
-    public PlayerTrackerModule() {
+    @Override
+    public void onEnable() {
         manager.getSession().scheduleRepeatingTask(this, () -> {
             tickCount++;
 

@@ -1,24 +1,15 @@
 package me.javlin.glowsquid.network.proxy;
 
-import lombok.Getter;
 import me.javlin.glowsquid.Console;
-import me.javlin.glowsquid.network.packet.PacketInfo;
 import me.javlin.glowsquid.network.proxy.module.Module;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PacketInjector implements Runnable {
-    private final ProxySession handler;
-
     private final Map<Module, Runnable> tasks = new ConcurrentHashMap<>();
     private final AtomicBoolean run = new AtomicBoolean(true);
-
-    public PacketInjector(ProxySession handler) {
-        this.handler = handler;
-    }
 
     public void run() {
         // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6435126

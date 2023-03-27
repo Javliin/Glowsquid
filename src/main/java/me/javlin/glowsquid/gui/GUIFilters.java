@@ -15,8 +15,12 @@ public class GUIFilters extends JFrame {
         setLayout(new BorderLayout());
 
         List<Filter> filters = GUIGlowsquid.getInstance().getFilters();
-        JTable filtersTable = new JTable();
         String[][] tableData = new String[filters.size()][3];
+        JTable filtersTable = new JTable() {
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
 
         int rowIndex = 0;
 
@@ -32,11 +36,11 @@ public class GUIFilters extends JFrame {
 
         filtersTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         filtersTable.setModel(model);
-        filtersTable.getColumnModel().getColumn(0).setPreferredWidth(50);
-        filtersTable.getColumnModel().getColumn(1).setPreferredWidth(75);
-        filtersTable.getColumnModel().getColumn(2).setPreferredWidth(75);
         filtersTable.getTableHeader().setReorderingAllowed(false);
         filtersTable.getTableHeader().setResizingAllowed(false);
+        filtersTable.setCellSelectionEnabled(false);
+        filtersTable.setColumnSelectionAllowed(false);
+        filtersTable.setRowSelectionAllowed(true);
 
         JPanel buttonPanel = new JPanel();
         JButton addFilter = new JButton("Add Filter");
@@ -57,6 +61,7 @@ public class GUIFilters extends JFrame {
         setResizable(false);
         setIconImage(icon);
         setSize(600, 200);
+        setLocationRelativeTo(null);
         setVisible(true);
     }
 }

@@ -55,6 +55,7 @@ public class GUIAccounts extends JFrame {
         setResizable(false);
         setIconImage(icon);
         setSize(600, 200);
+        setLocationRelativeTo(null);
         setVisible(true);
     }
 }

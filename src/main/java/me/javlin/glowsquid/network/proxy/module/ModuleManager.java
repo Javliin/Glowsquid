@@ -8,16 +8,23 @@ import me.javlin.glowsquid.network.proxy.ProxySession;
 import me.javlin.glowsquid.network.packet.event.PacketEventHandler;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
+import java.util.stream.Stream;
 
 @Getter
 public class ModuleManager {
+    private static final ModuleManager INSTANCE = new ModuleManager();
+
     private final List<Module> coreModules = new ArrayList<>();
     private final List<Module> modules = new ArrayList<>();
 
@@ -36,7 +43,10 @@ public class ModuleManager {
     public ModuleManager register(Class<? extends Module> clazz, boolean core) {
         try {
             Module module = clazz.getConstructor().newInstance();
-            module.setEnabled(true);
+
+            if (session != null) {
+                module.setEnabled(true);
+            }
 
             if (core) {
                 coreModules.add(module);
@@ -73,7 +83,6 @@ public class ModuleManager {
                         ModuleManager.class.getClassLoader()
                 )
         ) {
-
             jarFile.stream()
                     .filter(jarEntry -> jarEntry.getName().endsWith(".class"))
                     .map(jarEntry -> jarEntry.getName().replace("/", "."))
@@ -101,7 +110,27 @@ public class ModuleManager {
         return loadedModules;
     }
 
+    public void loadModulesDirectory() {
+        if (!new File("modules").exists()) {
+            if (!new File("modules").mkdir()) {
+                Console.warn("MODULE_FOLDER_FAIL_CREATE");
+            }
+        }
+
+        try (Stream<Path> paths = Files.walk(Paths.get("modules"))) {
+            paths.filter(Files::isRegularFile)
+                    .forEach(path -> load(path.toFile()));
+        } catch (IOException exception) {
+            Console.warn("MODULE_FOLDER_FAIL_LOAD");
+            exception.printStackTrace();
+        }
+    }
+
     public void unregister() {
         PacketEventHandler.unregisterAll();
+    }
+
+    public static ModuleManager getInstance() {
+        return INSTANCE;
     }
 }

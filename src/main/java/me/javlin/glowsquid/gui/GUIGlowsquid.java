@@ -50,6 +50,9 @@ public class GUIGlowsquid extends JFrame {
     private final JTextArea consoleOutput;
     private final DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss.SSS");
 
+    private boolean warnModules = true;
+    private boolean warnFilters = true;
+
     private GUIGlowsquid() {
         super("Glowsquid " + Glowsquid.VERSION);
 
@@ -287,22 +290,54 @@ public class GUIGlowsquid extends JFrame {
         JMenuBar menuBar = new JMenuBar();
         JMenuItem about = new JMenuItem("About");
         JMenuItem accounts = new JMenuItem("Accounts");
-        JMenuItem scripts = new JMenuItem("Scripts");
+        JMenuItem modules = new JMenuItem("Modules");
         JMenuItem filters = new JMenuItem("Filters");
         JMenu tools = new JMenu("Tools");
 
         about.addActionListener(click -> JOptionPane.showMessageDialog(
-                null,
+                this,
                 "A Minecraft packet capture tool written in Java\nDeveloped by Javlin",
                 "About",
                 JOptionPane.INFORMATION_MESSAGE,
                 icon
         ));
 
-        accounts.addActionListener(click -> new GUIAccounts(image));
-        filters.addActionListener(click -> new GUIFilters(image));
+        modules.addActionListener(click ->  {
+            if (warnModules) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Loading modules from untrusted sources could introduce " +
+                                "potentially malicious code that may compromise your computer or " +
+                                "lead to a ban from servers!\nOnly download modules from trusted " +
+                                "sources and use at your own risk.",
+                        "Modules",
+                        JOptionPane.WARNING_MESSAGE
+                );
 
-        tools.add(scripts);
+                warnModules = false;
+            }
+
+            new GUIModules(image);
+        });
+
+        accounts.addActionListener(click -> new GUIAccounts(image));
+        filters.addActionListener(click -> {
+            if (warnFilters) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Modifying some packets may flag anti-cheat plugins " +
+                                "and cause a ban!\nUse at your own risk.",
+                        "Filters",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+                warnFilters = false;
+            }
+
+            new GUIFilters(image);
+        });
+
+        tools.add(modules);
         tools.add(filters);
 
         menuBar.add(accounts);
@@ -338,6 +373,7 @@ public class GUIGlowsquid extends JFrame {
         setJMenuBar(menuBar);
         setIconImage(image);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
         setVisible(true);
     }
 

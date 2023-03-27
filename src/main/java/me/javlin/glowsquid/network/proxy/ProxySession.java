@@ -1,6 +1,5 @@
 package me.javlin.glowsquid.network.proxy;
 
-import lombok.Getter;
 import me.javlin.glowsquid.Console;
 import me.javlin.glowsquid.Glowsquid;
 import me.javlin.glowsquid.GlowsquidThreadFactory;
@@ -18,14 +17,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.List;
 import java.util.concurrent.*;
 
 public class ProxySession {
-    @Getter
-    private static volatile ModuleManager sessionManager;
+    private static ModuleManager sessionManager;
 
-    private final PacketInjector packetInjector = new PacketInjector(this);
+    private final PacketInjector packetInjector = new PacketInjector();
 
     private final ProxySessionProperties data = new ProxySessionProperties();
 
@@ -159,21 +156,25 @@ public class ProxySession {
                     serverData
             );
 
-            Glowsquid.getModuleManager().setSession(this);
+            ModuleManager.getInstance().setSession(this);
 
-            boolean result = serverMCConnection.start();
+            try {
+                boolean result = serverMCConnection.start();
 
-            if (!stopped) {
-                if (result) {
-                    Console.info("SESSION_FINISH");
-                    stop();
-                } else {
-                    Console.error("SESSION_FAIL_SERVER");
+                if (!stopped) {
+                    if (result) {
+                        Console.info("SESSION_FINISH");
+                        stop();
+                    } else {
+                        Console.error("SESSION_FAIL_SERVER");
 
-                    serverMCConnection.stop(false);
-                    clientMCConnection.stop(false);
-                    stop();
+                        serverMCConnection.stop(false);
+                        clientMCConnection.stop(false);
+                        stop();
+                    }
                 }
+            } finally {
+                ModuleManager.getInstance().setSession(null);
             }
         } catch (Throwable exception) {
             Console.error("SESSION_ERROR");

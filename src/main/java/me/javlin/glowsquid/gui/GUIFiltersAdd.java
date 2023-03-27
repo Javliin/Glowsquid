@@ -201,6 +201,7 @@ public class GUIFiltersAdd extends JFrame {
         setResizable(false);
         setIconImage(icon);
         setSize(300, 360);
+        setLocationRelativeTo(null);
         setVisible(true);
     }
 

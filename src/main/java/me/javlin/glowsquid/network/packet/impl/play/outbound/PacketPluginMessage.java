@@ -1,10 +1,12 @@
 package me.javlin.glowsquid.network.packet.impl.play.outbound;
 
 import lombok.Getter;
+import lombok.Setter;
 import me.javlin.glowsquid.network.packet.Packet;
 import me.javlin.glowsquid.network.packet.builder.PacketDecoder;
 
 @Getter
+@Setter
 public class PacketPluginMessage extends Packet {
     public static final int ID = 0x17;
 

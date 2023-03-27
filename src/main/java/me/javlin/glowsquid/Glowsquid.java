@@ -2,7 +2,6 @@ package me.javlin.glowsquid;
 
 import com.github.ffalcinelli.jdivert.WinDivert;
 import com.github.ffalcinelli.jdivert.exceptions.WinDivertException;
-import lombok.Getter;
 import me.javlin.glowsquid.gui.GUIGlowsquid;
 import me.javlin.glowsquid.network.interceptor.IInterceptor;
 import me.javlin.glowsquid.network.proxy.ProxySession;
@@ -42,11 +41,6 @@ public class Glowsquid {
 
     private static final AtomicBoolean run = new AtomicBoolean(true);
 
-    @Getter
-    private static final ModuleManager moduleManager = new ModuleManager()
-            .register(PlayerTrackerModule.class)
-            .register(FilterModule.class);
-
     public static void main(String[] args) {
         Thread.currentThread().setName("glowsquid");
         GUIGlowsquid.getInstance(); // Initialize GUI
@@ -82,6 +76,11 @@ public class Glowsquid {
             stop();
             return;
         }
+
+        ModuleManager.getInstance()
+                .register(PlayerTrackerModule.class)
+                .register(FilterModule.class)
+                .loadModulesDirectory();
 
         listen();
     }
