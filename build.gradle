@@ -19,7 +19,7 @@ repositories {
 dependencies {
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     implementation 'org.reflections:reflections:0.10.2'
-    implementation 'com.github.Javliin:jdivert:1.1.1'
+    implementation 'com.github.Javliin:jdivert:master-SNAPSHOT'
     implementation 'org.slf4j:slf4j-simple:2.0.7'
     implementation 'org.slf4j:slf4j-api:2.0.7'
     implementation 'com.formdev:flatlaf:3.0'
