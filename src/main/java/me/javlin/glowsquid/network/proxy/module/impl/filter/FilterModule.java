@@ -14,10 +14,6 @@ import java.util.List;
 public class FilterModule extends Module {
     private static final GUIGlowsquid GUI = GUIGlowsquid.getInstance();
 
-    public FilterModule(ModuleManager manager) {
-        super(manager);
-    }
-
     @PacketEvent
     public void onPacket(PacketSendEvent<Packet> event) {
         Packet packet = event.getPacket();

@@ -1,21 +1,16 @@
 package me.javlin.glowsquid.network.proxy;
 
+import lombok.Getter;
 import me.javlin.glowsquid.Console;
 import me.javlin.glowsquid.Glowsquid;
 import me.javlin.glowsquid.GlowsquidThreadFactory;
-import me.javlin.glowsquid.network.DelayedPacket;
-import me.javlin.glowsquid.network.DelayedType;
 import me.javlin.glowsquid.network.packet.impl.handshaking.PacketHandshake;
+import me.javlin.glowsquid.network.proxy.module.Module;
 import me.javlin.glowsquid.network.proxy.module.ModuleManager;
 import me.javlin.glowsquid.network.proxy.impl.HandshakeProxy;
 import me.javlin.glowsquid.network.proxy.impl.login.CLoginProxy;
 import me.javlin.glowsquid.network.proxy.impl.PlayProxy;
 import me.javlin.glowsquid.network.proxy.impl.login.SLoginProxy;
-import me.javlin.glowsquid.network.proxy.module.impl.core.CommandModule;
-import me.javlin.glowsquid.network.proxy.module.impl.delay.ClientMovementDelayModule;
-import me.javlin.glowsquid.network.proxy.module.impl.delay.ServerMovementDelayModule;
-import me.javlin.glowsquid.network.proxy.module.impl.filter.FilterModule;
-import me.javlin.glowsquid.network.proxy.module.impl.core.PlayerTrackerModule;
 import me.javlin.glowsquid.network.packet.Packet;
 import me.javlin.glowsquid.network.packet.PacketInfo;
 
@@ -27,6 +22,9 @@ import java.util.List;
 import java.util.concurrent.*;
 
 public class ProxySession {
+    @Getter
+    private static volatile ModuleManager sessionManager;
+
     private final PacketInjector packetInjector = new PacketInjector(this);
 
     private final ProxySessionProperties data = new ProxySessionProperties();
@@ -48,7 +46,6 @@ public class ProxySession {
     public void start() {
         threadPool = Executors.newCachedThreadPool(new GlowsquidThreadFactory(Thread.currentThread().getName() + "-thread"));
 
-        ModuleManager manager = null;
         String address = null;
 
         try {
@@ -162,13 +159,7 @@ public class ProxySession {
                     serverData
             );
 
-            // Initialize modules relying on packet event system
-            manager = new ModuleManager(this)
-                    .register(PlayerTrackerModule.class)
-                    .register(FilterModule.class);
-            //      .register(CommandModule.class)
-            //      .register(ClientMovementDelayModule.class)
-            //      .register(ServerMovementDelayModule.class);
+            Glowsquid.getModuleManager().setSession(this);
 
             boolean result = serverMCConnection.start();
 
@@ -189,8 +180,9 @@ public class ProxySession {
             exception.printStackTrace();
             stop();
         } finally {
-            if (manager != null) {
-                manager.unregister();
+            if (sessionManager != null) {
+                sessionManager.unregister();
+                sessionManager = null;
             }
 
             if (address != null) {
@@ -218,8 +210,12 @@ public class ProxySession {
         }
     }
 
-    public void scheduleRepeatingTask(Runnable task) {
-        packetInjector.scheduleTask(task);
+    public void scheduleRepeatingTask(Module module, Runnable task) {
+        packetInjector.scheduleTask(module, task);
+    }
+
+    public void removeRepeatingTasks(Module module) {
+        packetInjector.removeTasks(module);
     }
 
     public void queueOutbound(Packet packet) {
@@ -228,10 +224,6 @@ public class ProxySession {
 
     public void queueInbound(Packet packet) {
         serverMCConnection.queue(packet);
-    }
-
-    public ConcurrentHashMap<DelayedType, List<DelayedPacket>> getDelayedPacketQueue() {
-        return packetInjector.getDelayedPacketQueue();
     }
 
     public boolean is18() {

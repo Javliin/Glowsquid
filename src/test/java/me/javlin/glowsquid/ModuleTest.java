@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Assertions;
 public class ModuleTest {
     @Test
     public void createModule() {
-        ModuleManager manager = new ModuleManager(new DummySession());
+        ModuleManager manager = new ModuleManager();
         manager.register(DummyModule.class);
-        Assertions.assertEquals(1, manager.getModules().size());
+        Assertions.assertEquals(1, manager.getCoreModules().size());
         manager.unregister();
     }
 }

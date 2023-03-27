@@ -2,12 +2,16 @@ package me.javlin.glowsquid;
 
 import com.github.ffalcinelli.jdivert.WinDivert;
 import com.github.ffalcinelli.jdivert.exceptions.WinDivertException;
+import lombok.Getter;
 import me.javlin.glowsquid.gui.GUIGlowsquid;
 import me.javlin.glowsquid.network.interceptor.IInterceptor;
 import me.javlin.glowsquid.network.proxy.ProxySession;
 import me.javlin.glowsquid.network.interceptor.SInterceptor;
 import me.javlin.glowsquid.network.interceptor.CInterceptor;
 import me.javlin.glowsquid.network.packet.builder.PacketBuilder;
+import me.javlin.glowsquid.network.proxy.module.ModuleManager;
+import me.javlin.glowsquid.network.proxy.module.impl.core.PlayerTrackerModule;
+import me.javlin.glowsquid.network.proxy.module.impl.filter.FilterModule;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -38,10 +42,13 @@ public class Glowsquid {
 
     private static final AtomicBoolean run = new AtomicBoolean(true);
 
+    @Getter
+    private static final ModuleManager moduleManager = new ModuleManager()
+            .register(PlayerTrackerModule.class)
+            .register(FilterModule.class);
 
     public static void main(String[] args) {
         Thread.currentThread().setName("glowsquid");
-
         GUIGlowsquid.getInstance(); // Initialize GUI
 
         try {

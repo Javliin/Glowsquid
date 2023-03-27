@@ -15,14 +15,21 @@ import java.util.stream.Collectors;
 
 //TODO: Make this per-ModuleManager for multi-session support
 public class PacketEventHandler {
-    private static final Map<Class<? extends Packet>, List<EventEntry>> eventListeners = new HashMap<>();
+    private static final Map<Class<? extends Packet>, List<EventEntry>> eventMap = new HashMap<>();
+    private static final Map<Object, Map<Class<? extends Packet>, List<EventEntry>>> moduleMap = new HashMap<>();
 
     public static void register(Object listener) {
         registerClassEvents(listener);
     }
 
+    public static void unregister(Object listener) {
+        moduleMap.remove(listener);
+        updateEventMap();
+    }
+
     public static void unregisterAll() {
-        eventListeners.clear();
+        eventMap.clear();
+        moduleMap.clear();
     }
 
     public static PacketSendEvent<? extends Packet> call(Packet packet, PacketInfo.PacketState state, PacketInfo.PacketDirection direction) {
@@ -33,25 +40,27 @@ public class PacketEventHandler {
             return event;
         }
 
-        List<List<EventEntry>> eventEntiresSq = eventListeners.keySet()
-                .stream()
-                .filter(entry -> entry.isAssignableFrom(packet.getClass()))
-                .map(eventListeners::get)
-                .collect(Collectors.toList());
+        synchronized (eventMap) {
+            List<List<EventEntry>> eventEntiresSq = eventMap.keySet()
+                    .stream()
+                    .filter(entry -> entry.isAssignableFrom(packet.getClass()))
+                    .map(eventMap::get)
+                    .collect(Collectors.toList());
 
-        for (List<EventEntry> eventEntries : eventEntiresSq) {
-            if (eventEntries == null) {
-                continue;
-            }
-
-            eventEntries.forEach(entry -> {
-                try {
-                    entry.getCallback().invoke(entry.getSourceInstance(), event);
-                } catch (IllegalAccessException | InvocationTargetException exception) {
-                    Console.error("FAIL_INVOKE_EVENT", packet.getClass().getName(), entry.getSourceInstance().getClass().getName());
-                    exception.printStackTrace();
+            for (List<EventEntry> eventEntries : eventEntiresSq) {
+                if (eventEntries == null) {
+                    continue;
                 }
-            });
+
+                eventEntries.forEach(entry -> {
+                    try {
+                        entry.getCallback().invoke(entry.getSourceInstance(), event);
+                    } catch (IllegalAccessException | InvocationTargetException exception) {
+                        Console.error("FAIL_INVOKE_EVENT", packet.getClass().getName(), entry.getSourceInstance().getClass().getName());
+                        exception.printStackTrace();
+                    }
+                });
+            }
         }
 
         return event;
@@ -64,6 +73,8 @@ public class PacketEventHandler {
      */
     @SuppressWarnings("unchecked")
     private static void registerClassEvents(Object instance) {
+        Map<Class<? extends Packet>, List<EventEntry>> map = new HashMap<>();
+
         for (Method method : instance.getClass().getDeclaredMethods()) {
             if (method.isAnnotationPresent(PacketEvent.class)) {
                 Class<?>[] parameters = method.getParameterTypes();
@@ -82,14 +93,19 @@ public class PacketEventHandler {
                     continue;
                 }
 
-                addEventListener((Class<? extends Packet>) actualGenericTypes[0], new EventEntry(method, instance));
+                addEventListener(map, (Class<? extends Packet>) actualGenericTypes[0], new EventEntry(method, instance));
             }
         }
+
+        moduleMap.put(instance, map);
+        updateEventMap();
     }
 
-    private static void addEventListener(Class<? extends Packet> event, EventEntry data) {
-        boolean listExists = eventListeners.containsKey(event);
-        List<EventEntry> events = listExists ? eventListeners.get(event) : new ArrayList<>();
+    private static void addEventListener(
+            Map<Class<? extends Packet>, List<EventEntry>> map,
+            Class<? extends Packet> event,
+            EventEntry data) {
+        List<EventEntry> events = map.getOrDefault(event, new ArrayList<>());
 
         if (!data.getCallback().isAccessible()) {
             data.getCallback().setAccessible(true);
@@ -97,8 +113,22 @@ public class PacketEventHandler {
 
         events.add(data);
 
-        if (!listExists) {
-            eventListeners.put(event, events);
+        if (events.size() == 1) {
+            map.put(event, events);
+        }
+    }
+
+    private static void updateEventMap() {
+        synchronized (eventMap) {
+            eventMap.clear();
+
+            for (Map<Class<? extends Packet>, List<EventEntry>> map : moduleMap.values()) {
+                for (Map.Entry<Class<? extends Packet>, List<EventEntry>> entry : map.entrySet()) {
+                    for (EventEntry eventEntry : entry.getValue()) {
+                        addEventListener(eventMap, entry.getKey(), eventEntry);
+                    }
+                }
+            }
         }
     }
 

@@ -5,10 +5,12 @@ import me.javlin.glowsquid.Console;
 import me.javlin.glowsquid.network.DelayedPacket;
 import me.javlin.glowsquid.network.DelayedType;
 import me.javlin.glowsquid.network.packet.PacketInfo;
+import me.javlin.glowsquid.network.proxy.module.Module;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -18,7 +20,7 @@ public class PacketInjector implements Runnable {
 
     private final ProxySession handler;
 
-    private final List<Runnable> tasks = new ArrayList<>();
+    private final Map<Module, Runnable> tasks = new ConcurrentHashMap<>();
     private final AtomicBoolean run = new AtomicBoolean(true);
 
     public PacketInjector(ProxySession handler) {
@@ -64,7 +66,7 @@ public class PacketInjector implements Runnable {
                 });
             }
 
-            tasks.forEach(Runnable::run);
+            tasks.values().forEach(Runnable::run);
 
             // Works with an error of about ~1ms
             try {
@@ -83,7 +85,11 @@ public class PacketInjector implements Runnable {
         run.set(false);
     }
 
-    public void scheduleTask(Runnable task) {
-        tasks.add(task);
+    public void scheduleTask(Module module, Runnable task) {
+        tasks.put(module, task);
+    }
+
+    public void removeTasks(Module module) {
+        tasks.remove(module);
     }
 }

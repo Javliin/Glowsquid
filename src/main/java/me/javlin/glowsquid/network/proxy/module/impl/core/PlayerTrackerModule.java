@@ -15,10 +15,8 @@ public class PlayerTrackerModule extends Module {
 
     private int tickCount;
 
-    public PlayerTrackerModule(ModuleManager manager) {
-        super(manager);
-
-        manager.getSession().scheduleRepeatingTask(() -> {
+    public PlayerTrackerModule() {
+        manager.getSession().scheduleRepeatingTask(this, () -> {
             tickCount++;
 
             if(tickCount % 50 == 0) {
