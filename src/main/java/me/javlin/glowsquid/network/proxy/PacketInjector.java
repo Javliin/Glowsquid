@@ -2,22 +2,15 @@ package me.javlin.glowsquid.network.proxy;
 
 import lombok.Getter;
 import me.javlin.glowsquid.Console;
-import me.javlin.glowsquid.network.DelayedPacket;
-import me.javlin.glowsquid.network.DelayedType;
 import me.javlin.glowsquid.network.packet.PacketInfo;
 import me.javlin.glowsquid.network.proxy.module.Module;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PacketInjector implements Runnable {
-    @Getter
-    private final ConcurrentHashMap<DelayedType, List<DelayedPacket>> delayedPacketQueue = new ConcurrentHashMap<>();
-
     private final ProxySession handler;
 
     private final Map<Module, Runnable> tasks = new ConcurrentHashMap<>();
@@ -25,10 +18,6 @@ public class PacketInjector implements Runnable {
 
     public PacketInjector(ProxySession handler) {
         this.handler = handler;
-
-        for (DelayedType type : DelayedType.values()) {
-            delayedPacketQueue.put(type, new ArrayList<>());
-        }
     }
 
     public void run() {
@@ -45,27 +34,6 @@ public class PacketInjector implements Runnable {
         daemonSleepThread.start();
 
         while (run.get()) {
-            synchronized (delayedPacketQueue) {
-                delayedPacketQueue.forEach((type, packets) -> {
-                    Iterator<DelayedPacket> iterator = packets.iterator();
-                    DelayedPacket packet;
-
-                    while (iterator.hasNext()) {
-                        packet = iterator.next();
-
-                        if (System.currentTimeMillis() >= packet.getSendTime()) {
-                            if (type.getDirection() == PacketInfo.PacketDirection.OUTBOUND) {
-                                handler.queueOutbound(packet.getPacket());
-                            } else {
-                                handler.queueInbound(packet.getPacket());
-                            }
-
-                            iterator.remove();
-                        }
-                    }
-                });
-            }
-
             tasks.values().forEach(Runnable::run);
 
             // Works with an error of about ~1ms
