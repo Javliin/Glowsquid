@@ -27,8 +27,14 @@ You can load modules on startup by placing them in the ``modules`` folder, or lo
 Clone the repository, build it to your maven cache, and add the following to your build.gradle:
 
 ```groovy
+repositories {
+    maven {
+        url "https://jitpack.io"
+    }
+}
+
 dependencies {
-    implementation "me.javlin:glowsquid:1.1-SNAPSHOT"
+    implementation "com.github.Javliin:Glowsquid:main-SNAPSHOT"
 }
 ```
 Modules can primarily utilize a packet event system.
