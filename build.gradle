@@ -9,7 +9,6 @@ plugins {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
     maven {
         url "https://jitpack.io"
@@ -57,9 +56,21 @@ launch4j {
 
 group = 'me.javlin'
 version = '1.1-SNAPSHOT'
-description = 'glowsquid'
+description = 'A Minecraft packet capture / modification tool written in Java'
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 tasks.named("build") {
     finalizedBy("createExe")
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = group
+            artifactId = rootProject.name
+            version = version
+
+            from components.java
+        }
+    }
 }
