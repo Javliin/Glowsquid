@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 //TODO: Make this per-ModuleManager for multi-session support
 public class PacketEventHandler {
     private static final Map<Class<? extends Packet>, List<EventEntry>> eventMap = new HashMap<>();
-    private static final Map<Object, Map<Class<? extends Packet>, List<EventEntry>>> moduleMap = new HashMap<>();
+    private static final Map<Object, Map<Class<? extends Packet>, List<EventEntry>>> moduleMap = new LinkedHashMap<>();
 
     public static void register(Object listener) {
         registerClassEvents(listener);
@@ -25,11 +25,6 @@ public class PacketEventHandler {
     public static void unregister(Object listener) {
         moduleMap.remove(listener);
         updateEventMap();
-    }
-
-    public static void unregisterAll() {
-        eventMap.clear();
-        moduleMap.clear();
     }
 
     public static PacketSendEvent<? extends Packet> call(Packet packet, PacketInfo.PacketState state, PacketInfo.PacketDirection direction) {

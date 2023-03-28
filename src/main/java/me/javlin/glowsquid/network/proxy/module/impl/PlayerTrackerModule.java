@@ -1,4 +1,4 @@
-package me.javlin.glowsquid.network.proxy.module.impl.core;
+package me.javlin.glowsquid.network.proxy.module.impl;
 
 import me.javlin.glowsquid.mc.Player;
 import me.javlin.glowsquid.network.proxy.module.Module;
@@ -35,7 +35,12 @@ public class PlayerTrackerModule extends Module {
     @PacketEvent
     public void onPlayerSpawn(PacketSendEvent<PacketSpawnPlayer> event) {
         PacketSpawnPlayer spawnPlayer = event.getPacket();
-        playerList.put(spawnPlayer.getEntityId(), new Player(spawnPlayer.getEntityId(), spawnPlayer.getX(), spawnPlayer.getY(), spawnPlayer.getZ()));
+        playerList.put(spawnPlayer.getEntityId(), new Player(
+                spawnPlayer.getEntityId(),
+                spawnPlayer.getX() / 32D,
+                spawnPlayer.getY() / 32D,
+                spawnPlayer.getZ() / 32D)
+        );
     }
 
     @PacketEvent

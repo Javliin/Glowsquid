@@ -1,4 +1,4 @@
-package me.javlin.glowsquid.network.proxy.module.impl.filter;
+package me.javlin.glowsquid.network.proxy.module.impl;
 
 import me.javlin.glowsquid.gui.GUIGlowsquid;
 import me.javlin.glowsquid.network.packet.builder.PacketBuilder;
@@ -6,6 +6,7 @@ import me.javlin.glowsquid.network.proxy.module.Module;
 import me.javlin.glowsquid.network.packet.Packet;
 import me.javlin.glowsquid.network.packet.event.PacketEvent;
 import me.javlin.glowsquid.network.packet.event.PacketSendEvent;
+import me.javlin.glowsquid.network.proxy.module.impl.filter.Filter;
 
 import java.util.List;
 

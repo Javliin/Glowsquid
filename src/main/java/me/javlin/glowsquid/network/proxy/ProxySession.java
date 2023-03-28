@@ -20,8 +20,6 @@ import java.net.Socket;
 import java.util.concurrent.*;
 
 public class ProxySession {
-    private static ModuleManager sessionManager;
-
     private final PacketInjector packetInjector = new PacketInjector();
 
     private final ProxySessionProperties data = new ProxySessionProperties();
@@ -43,6 +41,7 @@ public class ProxySession {
     public void start() {
         threadPool = Executors.newCachedThreadPool(new GlowsquidThreadFactory(Thread.currentThread().getName() + "-thread"));
 
+        ModuleManager manager = null;
         String address = null;
 
         try {
@@ -142,7 +141,6 @@ public class ProxySession {
                 return;
             }
 
-            // Auth is complete, we can now start the packet event system
             ProxySessionProperties serverData = new ProxySessionProperties(data);
 
             serverData.setDirection(PacketInfo.PacketDirection.INBOUND);
@@ -150,13 +148,16 @@ public class ProxySession {
             // Set compression is sent after the client play proxy starts, so it needs to be updated
             clientMCConnection.builder.compression(serverData.getCompressionThreshold());
 
+            manager = ModuleManager.getInstance();
             serverMCConnection = new PlayProxy(
                     serverLogin.input,
                     serverLogin.output,
                     serverData
             );
 
-            ModuleManager.getInstance().setSession(this);
+            manager.setSession(this);
+            manager.getCoreModules().forEach(module -> module.setEnabled(true));
+            threadPool.submit(packetInjector);
 
             try {
                 boolean result = serverMCConnection.start();
@@ -181,9 +182,8 @@ public class ProxySession {
             exception.printStackTrace();
             stop();
         } finally {
-            if (sessionManager != null) {
-                sessionManager.unregister();
-                sessionManager = null;
+            if (manager != null) {
+                manager.unregisterAll();
             }
 
             if (address != null) {

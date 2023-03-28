@@ -5,7 +5,6 @@ import lombok.Setter;
 import me.javlin.glowsquid.Console;
 import me.javlin.glowsquid.mc.Player;
 import me.javlin.glowsquid.network.proxy.ProxySession;
-import me.javlin.glowsquid.network.packet.event.PacketEventHandler;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,7 +64,6 @@ public class ModuleManager {
     }
 
     public ModuleManager unregister(Module module) {
-        coreModules.remove(module);
         modules.remove(module);
         module.setEnabled(false);
 
@@ -126,8 +124,10 @@ public class ModuleManager {
         }
     }
 
-    public void unregister() {
-        PacketEventHandler.unregisterAll();
+    public void unregisterAll() {
+        coreModules.forEach(module -> module.setEnabled(false));
+        modules.forEach(module -> module.setEnabled(false));
+        modules.clear();
     }
 
     public static ModuleManager getInstance() {
