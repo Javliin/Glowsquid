@@ -60,6 +60,8 @@ It also can be used to schedule repeating tasks, which are cancelled when the mo
 
 One or more Module classes can be present in a module JAR. No manifest is required. Some packets do not yet have implementations and will not be processed by the event system.
 
-An example module is provided in the ``modules/example`` folder.
+An example module can be found [here](https://github.com/Javliin/GlowsquidDelayModule).
+
 ## NOTE
-This project is still a bit of a mess, and I've only recently cleaned it up a bit. I plan to slowly improve it in my free time, but for now expect bugs and bad performance. 
+This project is still a bit of a mess, and I've only recently cleaned it up a bit.
+I plan to slowly improve it in my free time, but for now expect bugs and bad performance.

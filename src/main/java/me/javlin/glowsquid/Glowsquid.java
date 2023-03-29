@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Glowsquid {
     public static final Map<String, String> ACCESS_TOKENS = new HashMap<>();
-    public static final String VERSION = "v1.1";
+    public static final String VERSION = "v1.2";
     public static short PORT = 25565;
 
     private static final Map<String, Integer> IGNORED = new ConcurrentHashMap<>();

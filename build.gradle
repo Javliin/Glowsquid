@@ -55,7 +55,7 @@ launch4j {
 }
 
 group = 'me.javlin'
-version = '1.1-SNAPSHOT'
+version = '1.2-SNAPSHOT'
 description = 'A Minecraft packet capture / modification tool written in Java'
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
