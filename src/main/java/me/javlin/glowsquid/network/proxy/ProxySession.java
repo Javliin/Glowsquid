@@ -18,11 +18,13 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ProxySession {
-    private final PacketInjector packetInjector = new PacketInjector();
+    private final PacketInjector injector = new PacketInjector();
 
     private final ProxySessionProperties data = new ProxySessionProperties();
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     private final Socket server = new Socket();
     private final Socket client;
@@ -107,7 +109,8 @@ public class ProxySession {
                     clientMCConnection = new PlayProxy(
                             client.getInputStream(),
                             server.getOutputStream(),
-                            auth
+                            auth,
+                            lock.writeLock()
                     );
 
                     boolean result = clientMCConnection.start();
@@ -152,12 +155,13 @@ public class ProxySession {
             serverMCConnection = new PlayProxy(
                     serverLogin.input,
                     serverLogin.output,
-                    serverData
+                    serverData,
+                    lock.readLock()
             );
 
             manager.setSession(this);
             manager.getCoreModules().forEach(module -> module.setEnabled(true));
-            threadPool.submit(packetInjector);
+            threadPool.submit(injector.run(lock, serverMCConnection.output, clientMCConnection.output));
 
             try {
                 boolean result = serverMCConnection.start();
@@ -212,19 +216,19 @@ public class ProxySession {
     }
 
     public void scheduleRepeatingTask(Module module, Runnable task) {
-        packetInjector.scheduleTask(module, task);
+        injector.scheduleTask(module, task);
     }
 
     public void removeRepeatingTasks(Module module) {
-        packetInjector.removeTasks(module);
-    }
-
-    public void queueOutbound(Packet packet) {
-        clientMCConnection.queue(packet);
+        injector.removeTasks(module);
     }
 
     public void queueInbound(Packet packet) {
-        serverMCConnection.queue(packet);
+        injector.queueOutbound(clientMCConnection.builder.write(packet).getPacket());
+    }
+
+    public void queueOutbound(Packet packet) {
+        injector.queueInbound(serverMCConnection.builder.write(packet).getPacket());
     }
 
     public boolean is18() {

@@ -13,11 +13,12 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.locks.Lock;
 
 public class PlayProxy extends MinecraftProxy {
     private final PacketInfo.PacketDirection direction;
 
-    public PlayProxy(InputStream input, OutputStream output, ProxySessionProperties auth) {
+    public PlayProxy(InputStream input, OutputStream output, ProxySessionProperties auth, Lock lock) {
         super(input, output, new PacketBuilder(PacketInfo.PacketState.PLAY, auth.getDirection(), auth.getCompressionThreshold(), auth.is18()));
 
         if (!(input instanceof CipherInputStream) && !(output instanceof CipherOutputStream)) {
@@ -25,6 +26,7 @@ public class PlayProxy extends MinecraftProxy {
         }
 
         this.direction = auth.getDirection();
+        this.lock = lock;
     }
 
     @Override

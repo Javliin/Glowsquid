@@ -26,15 +26,15 @@ public class PacketSetExperience extends Packet {
 
     @Override
     public void read() {
+        experiencebar = readFloat();
         level = readVarInt();
         totalExperience = readVarInt();
-        experiencebar = readFloat();
     }
 
     @Override
     public void write() {
+        writeFloat(experiencebar);
         writeVarInt(level);
         writeVarInt(totalExperience);
-        writeFloat(experiencebar);
     }
 }

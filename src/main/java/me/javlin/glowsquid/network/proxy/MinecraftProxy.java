@@ -19,6 +19,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class MinecraftProxy {
     private static final GUIGlowsquid GUI = GUIGlowsquid.getInstance();
@@ -26,6 +28,8 @@ public abstract class MinecraftProxy {
     private final ConcurrentLinkedQueue<byte[]> packetQueue = new ConcurrentLinkedQueue<>();
 
     protected final PacketBuilder builder;
+
+    protected Lock lock;
 
     protected AtomicBoolean condition;
     protected AtomicBoolean success;
@@ -70,6 +74,12 @@ public abstract class MinecraftProxy {
                     }
                 }
 
+                boolean lockRequired = lock != null;
+
+                if (lockRequired) {
+                    lock.lock();
+                }
+
                 while (packetQueue.size() > 0) {
                     output.write(packetQueue.poll());
                     output.flush();
@@ -77,6 +87,10 @@ public abstract class MinecraftProxy {
 
                 output.write(intercept);
                 output.flush();
+
+                if (lockRequired) {
+                    lock.unlock();
+                }
             }
         } catch (SocketException ignored) { // Unavoidable on Windows following Socket#shutdownInput()
             stop(true);
